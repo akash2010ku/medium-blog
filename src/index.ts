@@ -2,12 +2,19 @@ import { Hono } from 'hono'
 import { PrismaClient } from '@prisma/client/edge'
 import { withAccelerate } from '@prisma/extension-accelerate'
 import { sign, verify } from 'hono/jwt'
+import { cors } from 'hono/cors'
+
+
 const app = new Hono<{
   Bindings: {
     DATABASE_URL: string,
     JWT_SECRET: string
   }       
 }>()
+
+app.use(cors({
+  origin: '*'
+}))
 
 app.use('/api/v1/blog/*', async (c, next) => {
   const header = c.req.header('authentication') || "";
@@ -39,7 +46,8 @@ app.post('/api/v1/signup', async (c) => {
     const jwt = await sign({ id: user.id }, c.env.JWT_SECRET);
     return c.json({ jwt });
   } catch (e) {
-    c.status(403);
+    console.log(e)
+   
     return c.json({ error: "error while signing up" });
   }
 })
